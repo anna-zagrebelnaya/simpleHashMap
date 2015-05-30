@@ -12,14 +12,9 @@ public class SimpleHashMap {
 
     private class Entry {
 
-        private static final long EMPTY_VALUE = Long.MIN_VALUE;
-
         private int key;
         private long value;
 
-        public Entry(int key) {
-            this(key, EMPTY_VALUE);
-        }
 
         public Entry(int key, long value) {
             this.key = key;
@@ -43,7 +38,7 @@ public class SimpleHashMap {
 
     public SimpleHashMap(int capacity) {
         if (capacity < 1) {
-            throw new RuntimeException("Capacity can be only more than 1!");
+            throw new IllegalArgumentException("Capacity can be only more than 1!");
         }
         this.size = 0;
         this.capacity = capacity;
@@ -52,7 +47,7 @@ public class SimpleHashMap {
 
     public void put(int key, long value) {
         if (size == capacity) {
-            throw new RuntimeException("The map is full!");
+            throw new IllegalStateException("The map is full!");
         }
         for (int i = index(hash(key)); ; i++) {
             if (i == capacity) {
@@ -60,11 +55,11 @@ public class SimpleHashMap {
             }
             Entry entry = entries[i];
             if (entry == null) {
-                entry = new Entry(key);
+                entry = new Entry(key, value);
                 entries[i] = entry;
                 size++;
-            }
-            if (entry.getKey() == key) {
+                return;
+            } else if (entry.getKey() == key) {
                 entry.setValue(value);
                 return;
             }
@@ -73,7 +68,7 @@ public class SimpleHashMap {
 
     public long get(int key) {
         if (size == 0) {
-            throw new RuntimeException("The map is empty!");
+            throw new IllegalStateException("The map is empty!");
         }
         for (int i = index(hash(key)); ; i++) {
             if (i == capacity) {
@@ -81,7 +76,7 @@ public class SimpleHashMap {
             }
             Entry entry = entries[i];
             if (entry == null) {
-                throw new RuntimeException("No such key!");
+                throw new IllegalStateException("No such key!");
             }
             if (entry.getKey() == key) {
                 return entry.getValue();

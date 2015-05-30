@@ -13,12 +13,12 @@ public class SimpleHashMapTest {
         simpleHashMap = new SimpleHashMap(CAPACITY);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testCreateMapWithZeroCapacity() {
         new SimpleHashMap(0);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testCreateMapWithNegativeCapacity() {
         new SimpleHashMap(-1);
     }
@@ -39,14 +39,14 @@ public class SimpleHashMapTest {
         Assert.assertEquals(simpleHashMap.size(), 2);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = IllegalStateException.class)
     public void testPutInFullMap() {
         simpleHashMap.put(1, 1);
         simpleHashMap.put(2, 2);
         simpleHashMap.put(3, 3);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = IllegalStateException.class)
     public void testGetFromEmptyMap() {
         Assert.assertEquals(simpleHashMap.get(0), 0);
     }
@@ -60,7 +60,7 @@ public class SimpleHashMapTest {
         Assert.assertEquals(simpleHashMap.get(1), 2);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = IllegalStateException.class)
     public void testGetByInvalidKey() {
         simpleHashMap.put(1, 1);
         simpleHashMap.get(2);
