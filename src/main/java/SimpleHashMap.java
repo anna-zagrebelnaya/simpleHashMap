@@ -1,5 +1,11 @@
-
+/**
+ * Hash table with open addressing and linear probing
+ */
 public class SimpleHashMap {
+
+    private static final int DEFAULT_CAPACITY = 1 << 4;
+    private static final int MAXIMUM_CAPACITY = 1 << 10;
+    private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     /**
      * The number of key-value mappings contained in this map.
@@ -9,12 +15,12 @@ public class SimpleHashMap {
      * The maximum number of key-value mappings that could be contained in this map.
      */
     private int capacity;
+    private final float loadFactor;
 
     private class Entry {
 
         private int key;
         private long value;
-
 
         public Entry(int key, long value) {
             this.key = key;
@@ -36,17 +42,32 @@ public class SimpleHashMap {
 
     private Entry[] entries;
 
+    public SimpleHashMap() {
+        this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
+    }
+
     public SimpleHashMap(int capacity) {
-        if (capacity < 1) {
-            throw new IllegalArgumentException("Capacity can be only more than 1!");
+        this(capacity, DEFAULT_LOAD_FACTOR);
+    }
+
+    public SimpleHashMap(int initialCapacity, float loadFactor) {
+        if (initialCapacity < 0) {
+            throw new IllegalArgumentException("Illegal initial capacity:" +
+                    initialCapacity);
         }
-        this.size = 0;
-        this.capacity = capacity;
-        entries = new Entry[capacity];
+        if (initialCapacity > MAXIMUM_CAPACITY)
+            initialCapacity = MAXIMUM_CAPACITY;
+        if (loadFactor <= 0 || Float.isNaN(loadFactor))
+            throw new IllegalArgumentException("Illegal load factor: " +
+                    loadFactor);
+        size = 0;
+        capacity = initialCapacity;
+        this.loadFactor = loadFactor;
+        entries = new Entry[this.capacity];
     }
 
     public void put(int key, long value) {
-        if (size == capacity) {
+        if (size == MAXIMUM_CAPACITY) {
             throw new IllegalStateException("The map is full!");
         }
         for (int i = index(hash(key)); ; i++) {
@@ -55,9 +76,11 @@ public class SimpleHashMap {
             }
             Entry entry = entries[i];
             if (entry == null) {
-                entry = new Entry(key, value);
-                entries[i] = entry;
+                entries[i] = new Entry(key, value);
                 size++;
+                if (size >= capacity*loadFactor) {
+                    resize(capacity*2);
+                }
                 return;
             } else if (entry.getKey() == key) {
                 entry.setValue(value);
@@ -88,11 +111,44 @@ public class SimpleHashMap {
         return this.size;
     }
 
-    private int hash(int x) {
-        return (x >> 15) ^ x;
+    private int hash(int key) {
+        return (key >> 15) ^ key;
     }
 
     private int index(int hash) {
+        return index(hash, capacity);
+    }
+
+    private int index(int hash, int capacity) {
         return Math.abs(hash) % capacity;
+    }
+
+    private void resize(int newCapacity) {
+        Entry[] newEntries = new Entry[newCapacity];
+        transfer(newEntries);
+        entries = newEntries;
+        capacity = newCapacity;
+    }
+
+    private void transfer(Entry[] newEntries) {
+        for (int i=0; i<capacity; i++) {
+            Entry oldEntry = entries[i];
+            if (oldEntry != null) {
+                putIntoEntries(oldEntry.getKey(), oldEntry.getValue(), newEntries);
+            }
+        }
+    }
+
+    private void putIntoEntries(int key, long value, Entry[] entries) {
+        for (int i = index(hash(key), entries.length); ; i++) {
+            if (i == entries.length) {
+                i = 0;
+            }
+            Entry newEntry = entries[i];
+            if (newEntry == null) {
+                entries[i] = new Entry(key, value);
+                return;
+            }
+        }
     }
 }
